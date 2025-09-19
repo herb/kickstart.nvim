@@ -13,16 +13,16 @@ local function calculate_optimal_layout(total_width)
   -- Calculate how many full-width windows can actually fit
   local available = total_width
   local max_full_windows = math.floor(available / (TARGET + SEP))
-  
+
   -- Determine optimal window count based on what fits well
   local window_count, full_windows
-  
+
   if max_full_windows >= 4 then
     -- Can fit 4+ full windows comfortably: create 5 total
     window_count = 5
     full_windows = 4
   elseif max_full_windows >= 3 then
-    -- Can fit 3 full windows comfortably: create 4 total  
+    -- Can fit 3 full windows comfortably: create 4 total
     window_count = 4
     full_windows = 3
   elseif max_full_windows >= 2 then
@@ -31,23 +31,23 @@ local function calculate_optimal_layout(total_width)
     full_windows = 2
   elseif max_full_windows >= 1 then
     -- Can fit 1 full window: create 2 total
-    window_count = 2 
+    window_count = 2
     full_windows = 1
   else
     -- Very narrow: single window
     window_count = 1
     full_windows = 1
   end
-  
+
   -- Calculate actual remaining space
   local separators = (window_count - 1) * SEP
   local used_by_full = full_windows * TARGET
   local remaining_space = total_width - separators - used_by_full
-  
+
   return {
     window_count = window_count,
     full_windows = full_windows,
-    remaining_space = math.max(0, remaining_space)
+    remaining_space = math.max(0, remaining_space),
   }
 end
 
@@ -61,10 +61,10 @@ local function relayout()
 
   -- Calculate optimal layout for current width
   local layout = calculate_optimal_layout(columns)
-  
+
   -- Rebuild layout cleanly
   vim.cmd 'only'
-  
+
   -- Create optimal number of splits
   for i = 2, layout.window_count do
     vim.cmd 'vnew'
@@ -78,41 +78,41 @@ local function relayout()
   local target_widths = {}
   for i = 1, layout.window_count do
     if i <= layout.full_windows then
-      target_widths[i] = TARGET  -- 92 chars
+      target_widths[i] = TARGET -- 92 chars
     elseif i == layout.full_windows + 1 and layout.remaining_space > 0 then
       target_widths[i] = layout.remaining_space
     else
-      target_widths[i] = 1  -- safety net
+      target_widths[i] = 1 -- safety net
     end
   end
 
   -- Apply widths in REVERSE order (rightmost first) to prevent redistribution
   for i = layout.window_count, 1, -1 do
     -- Move to window i
-    vim.cmd('wincmd t')  -- go to first window
+    vim.cmd 'wincmd t' -- go to first window
     for j = 2, i do
-      vim.cmd('wincmd l')  -- move right j-1 times
+      vim.cmd 'wincmd l' -- move right j-1 times
     end
-    
+
     -- Set width and lock it immediately
     vim.cmd('vertical resize ' .. target_widths[i])
-    vim.cmd('setlocal winfixwidth')
+    vim.cmd 'setlocal winfixwidth'
   end
-  
+
   -- Final enforcement pass - go through leftmost windows and ensure they have TARGET width
-  vim.cmd('wincmd t')  -- start at leftmost
+  vim.cmd 'wincmd t' -- start at leftmost
   for i = 1, math.min(layout.full_windows, layout.window_count) do
     local actual_width = vim.api.nvim_win_get_width(0)
     if actual_width ~= TARGET then
       -- Force correct width
       vim.cmd('vertical resize ' .. TARGET)
-      vim.cmd('setlocal winfixwidth')
+      vim.cmd 'setlocal winfixwidth'
     end
     if i < layout.window_count then
-      vim.cmd('wincmd l')
+      vim.cmd 'wincmd l'
     end
   end
-  
+
   -- Return to leftmost window
   vim.cmd 'wincmd t'
 end

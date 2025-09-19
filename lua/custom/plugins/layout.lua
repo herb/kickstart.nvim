@@ -15,7 +15,12 @@ return {
       }
 
       -- optional convenience mapping
-      vim.keymap.set('n', '<leader>l9', '<cmd>Layout92<cr>', { desc = 'Re-layout 92-col panes' })
+      vim.keymap.set(
+        'n',
+        '<leader>l9',
+        '<cmd>Layout92<cr>',
+        { desc = 'Re-layout 92-col panes' }
+      )
     end,
   },
 }

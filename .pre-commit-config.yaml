@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/JohnnyMorganz/StyLua
+    rev: v2.2.0
+    hooks:
+      - id: stylua
+        name: stylua
+        args:
+          - --config-path=.stylua.toml
+        additional_dependencies: []
+
+  # - repo: https://github.com/LuaLS/luacheck
+  #   rev: 1.1.2
+  #   hooks:
+  #     - id: luacheck
+  #       args:
+  #         - --codes
+  #         - --no-color
+  #       files: ^(lua|plugins|doc|init\.lua|.*\.lua)
