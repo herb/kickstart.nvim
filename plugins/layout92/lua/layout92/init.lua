@@ -56,8 +56,26 @@ local function relayout()
   vim.o.equalalways = false
   vim.o.winminwidth = 0
 
-  local columns = vim.o.columns
-  local current_buf = vim.api.nvim_get_current_buf()
+local columns = vim.o.columns
+
+-- Capture all visible window buffers before layout change
+local windows = vim.api.nvim_list_wins()
+local buffers = {}
+for _, win in ipairs(windows) do
+  local buf = vim.api.nvim_win_get_buf(win)
+  if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
+    table.insert(buffers, buf)
+  end
+end
+
+local current_buf = vim.api.nvim_get_current_buf()
+local current_buf_index = 1
+for i, buf in ipairs(buffers) do
+  if buf == current_buf then
+    current_buf_index = i
+    break
+  end
+end
 
   -- Calculate optimal layout for current width
   local layout = calculate_optimal_layout(columns)
@@ -70,9 +88,16 @@ local function relayout()
     vim.cmd 'vnew'
   end
 
-  -- Move to leftmost window and ensure it has the original buffer
-  vim.cmd 'wincmd t'
-  vim.api.nvim_set_current_buf(current_buf)
+-- Move to leftmost window and distribute saved buffers
+vim.cmd 'wincmd t'
+
+local windows_to_populate = math.min(#buffers, layout.window_count)
+for i = 1, windows_to_populate do
+  vim.api.nvim_set_current_buf(buffers[i])
+  if i < layout.window_count then
+    vim.cmd 'wincmd l'
+  end
+end
 
   -- Calculate target widths for all windows
   local target_widths = {}
@@ -113,8 +138,13 @@ local function relayout()
     end
   end
 
-  -- Return to leftmost window
-  vim.cmd 'wincmd t'
+-- Return to the window with the originally focused buffer
+vim.cmd 'wincmd t'
+if current_buf_index > 1 and current_buf_index <= layout.window_count then
+  for j = 2, current_buf_index do
+    vim.cmd 'wincmd l'
+  end
+end
 end
 
 function M.setup()
