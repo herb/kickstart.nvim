@@ -93,6 +93,12 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
+-- Fix for Docker containers: Ensure SHELL environment variable is set
+-- This is needed for jobstart() calls in plugins like lualine, gitsigns, etc.
+if not vim.env.SHELL or vim.env.SHELL == '' then
+  vim.env.SHELL = vim.o.shell
+end
+
 -- [[ Setting options ]]
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
