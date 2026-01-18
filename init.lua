@@ -93,6 +93,11 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
+-- Disable netrw (file explorer) to avoid LocalBrowseCheck errors
+-- We use neo-tree/telescope instead
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 -- Fix for Docker containers: Ensure SHELL environment variable is set
 -- This is needed for jobstart() calls in plugins like lualine, gitsigns, etc.
 if not vim.env.SHELL or vim.env.SHELL == '' then
@@ -1129,7 +1134,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
