@@ -22,7 +22,10 @@ return {
         },
       },
       -- Show hidden files by default
-      show_hidden = true,
+      filtered_items = {
+        hide_dotfiles = false,
+        hide_hidden = false,
+      },
       -- :e . opens in current window (legacy netrw behavior)
       hijack_netrw_behavior = 'open_current',
     },
