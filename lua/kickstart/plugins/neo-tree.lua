@@ -15,6 +15,7 @@ return {
   },
   opts = {
     filesystem = {
+      bind_to_cwd = false,
       window = {
         mappings = {
           ['<leader>e'] = 'close_window',
