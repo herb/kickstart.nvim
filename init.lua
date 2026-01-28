@@ -412,6 +412,7 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>m', group = '[M]otion Target' },
       },
     },
   },
@@ -634,6 +635,52 @@ require('lazy').setup({
               { buffer = event.buf, desc = 'LSP: ' .. desc }
             )
           end
+
+          -- targeted_lsp helper for multi-window jumps
+          local targeted_lsp = function(method)
+            local original_win = vim.api.nvim_get_current_win()
+            local original_buf = vim.api.nvim_get_current_buf()
+            local params = vim.lsp.util.make_position_params(original_win)
+
+            vim.notify('Direction (h/j/k/l)?', vim.log.levels.INFO)
+            local dir = vim.fn.getcharstr()
+            if not dir:match '[hjkl]' then
+              vim.notify('Cancelled', vim.log.levels.INFO)
+              return
+            end
+
+            local target_win = vim.fn.win_getid(vim.fn.winnr(dir))
+            if target_win == 0 or target_win == original_win then
+              vim.notify('No window in direction ' .. dir, vim.log.levels.WARN)
+              return
+            end
+
+            vim.lsp.buf_request(original_buf, method, params, function(err, result, ctx, _)
+              if err then
+                return vim.notify(err.message, vim.log.levels.ERROR)
+              end
+              if not result or vim.tbl_isempty(result) then
+                return vim.notify('No results', vim.log.levels.INFO)
+              end
+
+              vim.api.nvim_set_current_win(target_win)
+              if vim.islist(result) and #result > 1 then
+                local builtin = method:find 'definition' and 'lsp_definitions' or 'lsp_references'
+                require('telescope.builtin')[builtin] { jump_type = 'never' }
+              else
+                local location = vim.islist(result) and result[1] or result
+                vim.lsp.util.jump_to_location(location, 'utf-8')
+                vim.cmd 'normal! zz'
+              end
+            end)
+          end
+
+          map('<leader>mgrd', function()
+            targeted_lsp 'textDocument/definition'
+          end, '[M]otion [G]oto [D]efinition')
+          map('<leader>mgrr', function()
+            targeted_lsp 'textDocument/references'
+          end, '[M]otion [G]oto [R]eferences')
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
